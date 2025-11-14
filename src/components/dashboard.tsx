@@ -37,21 +37,24 @@ export default function Dashboard() {
       let extractedText = "";
 
       if (file.type === "application/pdf") {
-        const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf");
-        pdfjsLib.GlobalWorkerOptions.workerSrc =
-          `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
-
+        const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.js");
+      
+        // Point worker to public folder (NOT imported)
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.js";
+      
         const arrayBuffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-
+      
         let text = "";
         for (let i = 1; i <= pdf.numPages; i++) {
           const page = await pdf.getPage(i);
           const content = await page.getTextContent();
-          text += content.items.map((it: any) => it.str).join(" ") + "\n";
+          text += content.items.map((it: any) => it.str).join("") + "\n";
         }
+      
         extractedText = text;
-      } else if (file.type.startsWith("image/")) {
+      }
+      else if (file.type.startsWith("image/")) {
         extractedText = await extractTextFromImage(file);
       }
 
